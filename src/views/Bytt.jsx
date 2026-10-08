@@ -1,0 +1,20 @@
+import { useState } from 'react';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import Avatar from '../components/Avatar.jsx';
+import { stateQueryOptions } from '../queries/state.js';
+import { useStateMutations } from '../hooks/useStateMutations.js';
+import { useMe } from '../hooks/useMe.jsx';
+import { addDays, addWeeks, displayName, fmt, person, thisSaturday, whoAt } from '@shared/rota.js';
+const LABEL={accepted:'godtatt',declined:'avslått',cancelled:'trukket tilbake',expired:'utløpt (fristen gikk ut)'};
+
+export default function Bytt(){
+ const {data:state}=useSuspenseQuery(stateQueryOptions); const {me,isAdmin}=useMe(); const {requestSwap,respond,cancel,restart}=useStateMutations();
+ const others=state.people.filter(p=>p.id!==me); const [to,setTo]=useState(()=>others[0]?.id); const [first,setFirst]=useState(()=>state.people[0]?.id); const [err,setErr]=useState(''); const N=id=>displayName(person(state,id));
+ const run=async(fn)=>{setErr('');try{await fn();}catch(e){setErr(e.message);}}; const pending=state.swaps.filter(s=>s.status==='pending'); const incoming=pending.filter(s=>s.to===me); const outgoing=pending.filter(s=>s.from===me); const history=state.swaps.filter(s=>s.status!=='pending'&&(s.from===me||s.to===me)).slice(-5).reverse(); const sat=thisSaturday();
+ return <>
+ {isAdmin ? <section className="card narrow admin-only"><div className="admin-label">Admin</div><h1>Administrasjon</h1><p className="s">Her kan du starte vaskeraden på nytt. Du trenger ikke velge et rom for å logge inn som admin.</p><h2>Start raden på nytt</h2><p className="s">Den du velger vasker neste helg, og de andre følger i samme rekkefølge som før. Ventende forespørsler avbrytes.</p><div className="swap"><select value={first ?? ''} onChange={e=>setFirst(+e.target.value)}>{state.people.map(p=><option key={p.id} value={p.id}>{displayName(p)} (Rom {p.id})</option>)}</select><button className="primary" disabled={state.locked || !first || restart.isPending} onClick={()=>window.confirm(`Starte raden på nytt med ${N(first)}?`)&&run(()=>restart.mutateAsync({first}))}>{restart.isPending?'Starter …':'Start raden på nytt'}</button></div>{state.locked&&<p className="err">Raden kan ikke startes på nytt nå fordi fristen er ute.</p>}{err&&<p className="err">{err}</p>}</section> : <>
+ {incoming.length>0&&<section className="card alert"><h2>Venter på svar fra deg</h2>{incoming.map(s=><div key={s.id} className="req"><Avatar person={person(state,s.from)} size={36}/><span><b>{N(s.from)}</b> vil bytte plass med deg i turnusen.</span><button className="primary" onClick={()=>run(()=>respond.mutateAsync({id:s.id,by:me,accept:true}))}>Godta</button><button onClick={()=>run(()=>respond.mutateAsync({id:s.id,by:me,accept:false}))}>Avslå</button></div>)}</section>}
+ <section className="card narrow"><h1>Bytt plass</h1><p className="s">Byttet gjelder først når den andre har godtatt det.</p><p className={state.locked?'err':'s'}>{state.locked?'🔒 Fristen er ute. Du kan be om bytte igjen fra mandag.':'⏰ Frist for å be om bytte: fredag kl. 23:55 før helgen.'}</p><div className="swap"><select value={to} onChange={e=>setTo(+e.target.value)}>{others.map(p=><option key={p.id} value={p.id}>{displayName(p)} (Rom {p.id})</option>)}</select><button className="primary" disabled={state.locked||requestSwap.isPending} onClick={()=>run(()=>requestSwap.mutateAsync({from:me,to}))}>Be om bytte</button></div>{err&&<p className="err">{err}</p>}{outgoing.map(s=><div key={s.id} className="req"><span>⏳ Venter på at <b>{N(s.to)}</b> svarer</span><button className="ghost" onClick={()=>run(()=>cancel.mutateAsync({id:s.id,by:me}))}>Trekk tilbake</button></div>)}{history.map(s=><p key={s.id} className="s sm">{N(s.from)} → {N(s.to)}: {LABEL[s.status]}</p>)}</section></>}
+ <section className="card narrow"><h2>Neste fem helger</h2><ul className="list">{[0,1,2,3,4].map(n=>{const d=addWeeks(sat,n),p=whoAt(state,d);return <li key={n}><span className="date">{fmt(d)}–{fmt(addDays(d,1))}</span><Avatar person={p} size={32}/><span>{displayName(p)}</span></li>;})}</ul></section>
+ </>;
+}

@@ -1,0 +1,31 @@
+{
+  "name": "vaskeplan",
+  "private": true,
+  "version": "4.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@tanstack/react-query": "^5.90.0",
+    "@tanstack/react-router": "1.170.41",
+    "@tanstack/react-router-ssr-query": "1.167.3",
+    "@tanstack/react-start": "1.168.60",
+    "ci": "^2.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "std-env": "^4.3.0",
+    "unstorage": "^1.17.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "5.2.0",
+    "nitro": "^3.0.260603-beta",
+    "vite": "^7.3.6"
+  }
+}
