@@ -32,6 +32,6 @@ jobs:
       - name: Deploy to Azure App Service via Zip Deploy
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'helseinsight' # Change to your App Service name
+          app-name: 'lovabledemo' # Change to your App Service name
           publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: 'deploy.zip'
