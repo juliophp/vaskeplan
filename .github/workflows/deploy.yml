@@ -30,7 +30,7 @@ jobs:
         run: zip -r deploy.zip .output package.json
 
       - name: Deploy to Azure App Service via Zip Deploy
-        uses: azure/webapps-deploy@v4
+        uses: azure/webapps-deploy@v3
         with:
           app-name: 'lovabledemo' # Change to your App Service name
           publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}

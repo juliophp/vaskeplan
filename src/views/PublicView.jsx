@@ -28,6 +28,8 @@ export default function PublicView() {
         </div>
       </section>
 
+        <CalendarCard state={s} className="card cal-card" title="Månedskalender" />
+
       <section className="card">
         <h2>Kommende helger</h2>
         <ul className="list wk-list">
@@ -44,7 +46,6 @@ export default function PublicView() {
         </ul>
       </section>
 
-      <CalendarCard state={s} className="card cal-card" title="Månedskalender" />
     </main>
   );
 }
